@@ -5,10 +5,10 @@
 // Variable types
 
 // Declare variables
-$name = 'Azmol';
-$age = 30;
+$name = 'Azmol Miah whats going on blud';
+$age = 300912312310;
 $isMale = true;
-$height = 1.85;
+$height = 1.858999;
 $salary = null;
 
 // Print the variables. Explain what is concatenation
