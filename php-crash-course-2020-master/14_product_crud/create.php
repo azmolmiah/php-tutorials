@@ -2,13 +2,33 @@
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+// echo '<pre>';
+// var_dump($_FILES);
+// echo '</pre>';
+
 $errors = [];
+
+
+$title = '';
+$description = '';
+$price = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
     $description = $_POST['description'];
     $price = $_POST['price'];
     $date = date('Y-m-d H:i:s');
+
+    function randomString($n)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $str = '';
+        for ($i = 0; $i < $n; $i++) {
+            $index = rand(0, strlen($characters) - 1);
+            $str .= $characters[$index];
+        }
+        return $str;
+    }
 
     if (!$title) {
         $errors[] = 'Product title is required';
@@ -17,14 +37,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Product price is required';
     }
 
+    if (!is_dir('images')) {
+        mkdir('images');
+    }
+
     if (empty($errors)) {
+        $image = $_FILES['image'] ?? null;
+        $image_path = '';
+        if ($image) {
+
+            $image_path = 'images/' . date("Y-m-d_h-i-s") . '_' . $image['name'];
+            mkdir(dirname($image_path));
+
+            move_uploaded_file($image['tmp_name'], $image_path);
+        }
+
         $statement = $pdo->prepare("INSERT INTO products (title, image, description, price, created_at) VALUES (:title, :image, :description, :price, :created_at)");
         $statement->bindValue(':title', $title);
-        $statement->bindValue(':image', '');
+        $statement->bindValue(':image', $image_path);
         $statement->bindValue(':description', $description);
         $statement->bindValue(':price', $price);
         $statement->bindValue(':created_at', $date);
         $statement->execute();
+        header('Location: index.php');
     }
 }
 
@@ -40,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <div class="container">
+    <div class="container mt-5">
         <h1>Create new product</h1>
         <?php if (!empty($errors)) : ?>
             <div class="alert alert-danger">
@@ -49,9 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="multipart/form-data">
             <div class="form-group">
-                <label>Product Image</label>
+                <label class="mb-1">Product Image</label>
+                <br>
                 <input type="file" name="image">
             </div>
             <br>
@@ -65,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
                 <label>Product Price</label>
-                <input type="number" name="price" step=".01" class="form-control" value="<?php echo $price; ?>">
+                <input type="number" name="price" step=".01" class="form-control mb-5" value="<?php echo $price; ?>">
             </div>
 
             <button type="submit" class="btn btn-primary" name="submit">Submit</button>
