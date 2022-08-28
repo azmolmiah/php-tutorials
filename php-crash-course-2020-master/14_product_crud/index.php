@@ -2,7 +2,14 @@
 $pdo = new PDO('mysql:host=localhost;port=3306;dbname=products_crud', 'root', '');
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$statement = $pdo->prepare('SELECT * FROM products ORDER BY created_at DESC');
+$search = $_GET['search'] ?? '';
+
+if ($search) {
+    $statement = $pdo->prepare('SELECT * FROM products WHERE title LIKE :title  ORDER BY created_at DESC');
+    $statement->bindValue(':title', "%$search%");
+} else {
+    $statement = $pdo->prepare('SELECT * FROM products ORDER BY created_at DESC');
+}
 $statement->execute();
 $products = $statement->fetchAll(PDO::FETCH_ASSOC);
 
@@ -21,11 +28,20 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
     <div class="container mt-5">
         <h1>Products Crud</h1>
         <p><a href="create.php" class="btn btn-outline-success">Creat Product</a></p>
+
+        <form>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search products" name="search" value="<?php echo $search; ?>">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </form>
+
+
         <table class="table">
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col ">Image</th>
+                    <th scope="col">Image</th>
                     <th scope="col">Title </th>
                     <th scope="col">Price</th>
                     <th scope="col">Created Date</th>
@@ -43,8 +59,13 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo $product['price']; ?></td>
                         <td><?php echo $product['created_at']; ?></td>
                         <td>
-                            <button type="button" class="btn btn-outline-primary btn-sm">Edit</button>
-                            <button type="button" class="btn btn-outline-danger btn-sm">Delete</button>
+                            <div class="d-flex gap-2 justify-content-between"><a href="update.php?id=<?php echo $product['id']; ?>" type="button" class="btn btn-outline-primary btn-sm">Edit</a>
+                                <form class="d-inline" method="post" action="delete.php">
+                                    <input type="hidden" name='id' value="<?php echo $product['id']; ?>">
+                                    <button type="submit" type="button" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+
                         </td>
 
                     </tr>
