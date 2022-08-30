@@ -1,0 +1,17 @@
+{
+    "name": "azmol/15_autoloading",
+    "autoload": {
+        "psr-4": {
+            "app\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "azmolmiah",
+            "email": "azmol.miah.general@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.5"
+    }
+}
