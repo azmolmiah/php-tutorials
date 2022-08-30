@@ -6,7 +6,7 @@ class ProductController
 {
     public static function index()
     {
-        echo "Index page";
+        echo "Index page is amazing";
     }
 
     public static function create()
