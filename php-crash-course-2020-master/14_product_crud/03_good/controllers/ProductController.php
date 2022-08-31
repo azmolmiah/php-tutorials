@@ -2,16 +2,34 @@
 
 namespace app\controllers;
 
+use app\Router;
+
 class ProductController
 {
-    public static function index()
+    public static function index(Router $router)
     {
-        echo "Index page is amazing";
+        $search = $_GET['search'] ?? null;
+        $products = $router->db->getProducts($search);
+
+        $router->renderView('products/index', [
+            'products' => $products,
+            'search' => $search
+        ]);
     }
 
-    public static function create()
+    public static function create(Router $router)
     {
-        echo "Create page";
+        $errors = [];
+        $product = [
+            'title' => '',
+            'description' => '',
+            'image' => '',
+            'price' => '',
+        ];
+        $router->renderView('products/create', [
+            'product' => $product,
+            'errors' => $errors
+        ]);
     }
 
     public static function update()
