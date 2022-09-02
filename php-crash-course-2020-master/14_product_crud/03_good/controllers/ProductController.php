@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Product;
 use app\Router;
 
 class ProductController
@@ -20,25 +21,75 @@ class ProductController
     public static function create(Router $router)
     {
         $errors = [];
-        $product = [
+        $productData = [
             'title' => '',
             'description' => '',
             'image' => '',
             'price' => '',
         ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $productData['title'] = $_POST['title'];
+            $productData['description'] = $_POST['description'];
+            $productData['price'] = (float)$_POST['price'];
+            $productData['image_file'] = $_FILES['image'] ?? null;
+
+            $product = new Product();
+            $product->load($productData);
+            $errors = $product->save();
+            if (empty($errors)) {
+                header('Location: /');
+                exit;
+            }
+        }
+
         $router->renderView('products/create', [
-            'product' => $product,
+            'product' => $productData,
             'errors' => $errors
         ]);
     }
 
-    public static function update()
+    public static function update(Router $router)
     {
-        echo "Update page";
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: /');
+            exit;
+        }
+
+        $errors = [];
+
+        $productData = $router->db->getProductById($id);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $productData['title'] = $_POST['title'];
+            $productData['description'] = $_POST['description'];
+            $productData['price'] = (float)$_POST['price'];
+            $productData['image_file'] = $_FILES['image'] ?? null;
+
+            $product = new Product();
+            $product->load($productData);
+            $errors = $product->save();
+            if (empty($errors)) {
+                header('Location: /');
+                exit;
+            }
+        }
+
+        $router->renderView('products/update', [
+            'product' => $productData,
+            'errors' => $errors
+        ]);
     }
 
-    public static function delete()
+    public static function delete(Router $router)
     {
-        echo "Delete page";
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            header('Location: /');
+            exit;
+        }
+        $router->db->deleteProduct($id);
+        header('Location: /');
     }
 }
